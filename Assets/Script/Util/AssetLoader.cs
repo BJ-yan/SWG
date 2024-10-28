@@ -1,4 +1,4 @@
-namespace util
+namespace Util
 {
     using System;
     using UnityEngine;
@@ -7,12 +7,12 @@ namespace util
 
     public class AssetLoader : IAssetLoader
     {
-       public T ResourcesLoad<T>(string path) where T : UnityEngine.Object
+       public static T ResourcesLoad<T>(string path) where T : UnityEngine.Object
        {
             return Resources.Load<T>(path);
        }
 
-       public T[] ResourceLoadAll<T>(string path) where T : UnityEngine.Object
+       public static T[] ResourceLoadAll<T>(string path) where T : UnityEngine.Object
        {
             return Resources.LoadAll<T>(path);
        }

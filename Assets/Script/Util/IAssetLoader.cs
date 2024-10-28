@@ -1,4 +1,4 @@
-namespace util
+namespace Util
 {
     using System;
     using System.Collections.Generic;
