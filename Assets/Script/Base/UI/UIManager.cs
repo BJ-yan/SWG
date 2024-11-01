@@ -1,18 +1,15 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-
-public class UIManager : MonoBehaviour
+namespace Base.UI
 {
-    // Start is called before the first frame update
-    void Start()
+    using System;
+    using UnityEngine;
+    using System.Collections;
+    using System.Collections.Generic;
+    
+    public class UIManager : MonoBehaviour
     {
+        private ViewRouter _viewRouter;
         
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
+        public void AttachView()
+        {}
     }
 }
