@@ -7,9 +7,19 @@ namespace Base.UI
     
     public class UIManager : MonoBehaviour
     {
-        private ViewRouter _viewRouter;
+        private string TAG = "UIManager";
+        private ViewRouter _viewRouter = new ViewRouter();
         
+        private Canvas _root;
+        public void Init()
+        {
+            Debug.Log($"{TAG}, UIManager init");
+            _root = new GameObject("ROOT").AddComponent<Canvas>();
+            _root.GetComponent<RectTransform>().localPosition = new Vector3(0, 20, 0);
+        }
         public void AttachView()
-        {}
+        {
+            
+        }
     }
 }
