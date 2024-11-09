@@ -5,18 +5,19 @@ namespace Base.Control
     using UnityEngine;
     public class CameraControl : MonoBehaviour
     {
+        private string TAG = "CameraControl";
         public bool IsInteracte = true;
         public float moveSpeed = 0.1f;
         public float dragSpeed = 0.02f;
-
-        [Header("相机视野范围")]
-        public float minSize = 6;
-        public float maxSize = 12;
-        public float zoomSpeed = 0.5f;
+        public float zoomSpeed = 1.0f;
 
         [Header("相机活动范围")]
-        public float[] minSizeBound = new float[4];
-        public float[] maxSizeBound = new float[4];
+        public float topPar = 0.0f;
+        public float bottomPar = 0.0f;
+        public float leftPar = 0.0f;
+        public float rightPar = 0.0f;
+        public float far = 120.0f;
+        public float near = 10.0f;
 
         // 记录鼠标滚轮当前值
         private float mouseWheel_;
@@ -27,18 +28,13 @@ namespace Base.Control
         private Camera cam_;
         private Transform camTrans_;
 
-        private float topPar_;
-        private float bottomPar_;
-        private float leftPar_;
-        private float rightPar_;
-
         private void Awake()
         {
             cam_ = GetComponent<Camera>();
             camTrans_ = cam_.transform;
 
-            SetCameraMoveParam();
-            SetCameraInitPos(Vector3.zero);
+            SetCameraInitPos(new Vector3(0, 50, -80));
+            SetCameraInitAngle(new Vector3(35, 0, 0));
         }
 
         private void Update()
@@ -52,30 +48,11 @@ namespace Base.Control
                 keyCodeMoveCamera();
                 mouseDragCameraMove();
                 mouseScrollWheelChangeView();
-                // restrictCameraPosition();
             }
             else
             {
                 if (mouseIsDrag_) mouseIsDrag_ = false;
             }
-        }
-
-        ///<summary>
-        /// 设置相机移动系数
-        ///</summary>
-        private void SetCameraMoveParam()
-        {
-            float sizeRange = maxSize - minSize;
-
-            float topRange = maxSizeBound[0] - minSizeBound[0];
-            float bottomRange = maxSizeBound[1] - minSizeBound[1];
-            float leftRange = maxSizeBound[2] - minSizeBound[2];
-            float rightRange = maxSizeBound[3] - minSizeBound[3];
-
-            topPar_ = topRange / sizeRange;
-            bottomPar_ = bottomRange / sizeRange;
-            leftPar_ = leftRange / sizeRange;
-            rightPar_ = rightRange / sizeRange;
         }
 
         ///<summary>
@@ -87,30 +64,34 @@ namespace Base.Control
         }
 
         ///<summary>
+        ///设置摄像机旋转
+        ///</summary>
+        private void SetCameraInitAngle(Vector3 pos)
+        {
+            camTrans_.eulerAngles  = new Vector3(pos.x, pos.y, pos.z);
+        }
+
+        ///<summary>
         ///鼠标在屏幕边缘时移动相机
         ///</summary>
         private void mouseInScreenBound()
         {
             Vector3 v1 = Camera.main.ScreenToViewportPoint(Input.mousePosition);
-            //上移动
-            if (v1.y >= 1 - mouseOffset_)
-            {
-                camTrans_.Translate(Vector2.up * moveSpeed);
-            }
-            //下移动
-            if (v1.y <= mouseOffset_)
-            {
-                camTrans_.Translate(Vector2.down * moveSpeed);
-            }
             //左移
             if (v1.x <= mouseOffset_)
             {
-                camTrans_.Translate(Vector2.left * moveSpeed);
+                if (camTrans_.position.x - moveSpeed >= leftPar)
+                {
+                    camTrans_.Translate(new Vector3(-moveSpeed, 0, 0));
+                }
             }
             //右移
             if (v1.x >= 1 - mouseOffset_)
             {
-                camTrans_.Translate(Vector2.right * moveSpeed);
+                if (camTrans_.position.x + moveSpeed <= rightPar)
+                {
+                    camTrans_.Translate(new Vector3(moveSpeed, 0, 0));
+                }
             }
         }
 
@@ -121,11 +102,11 @@ namespace Base.Control
         {
             if (Input.GetKey(KeyCode.W))
             {
-                camTrans_.Translate(Vector2.up * moveSpeed);
+                camTrans_.position = new Vector3(camTrans_.position.x, camTrans_.position.y, camTrans_.position.z + moveSpeed);
             }
             if (Input.GetKey(KeyCode.S))
             {
-                camTrans_.Translate(Vector2.down * moveSpeed);
+                camTrans_.position = new Vector3(camTrans_.position.x, camTrans_.position.y, camTrans_.position.z - moveSpeed);
             }
             if (Input.GetKey(KeyCode.A))
             {
@@ -166,46 +147,14 @@ namespace Base.Control
         private void mouseScrollWheelChangeView()
         {
             mouseWheel_ = Input.GetAxis("Mouse ScrollWheel");//获取滚轮值的改变
-            //视野放大
-            if (mouseWheel_ < 0 && cam_.orthographicSize + zoomSpeed <= maxSize)
+            if (mouseWheel_ < 0.0f && cam_.fieldOfView <= far)
             {
-                cam_.orthographicSize += zoomSpeed;
+                cam_.fieldOfView += 10 * zoomSpeed * Time.deltaTime;
             }
-            //视野缩小
-            else if (mouseWheel_ > 0 && cam_.orthographicSize - zoomSpeed >= minSize)
+            else if (mouseWheel_ > 0.0f && cam_.fieldOfView >= near)
             {
-                cam_.orthographicSize -= zoomSpeed;
+                cam_.fieldOfView -= 10 * zoomSpeed * Time.deltaTime;
             }
         }
-
-         /// <summary>
-        /// 限制相机位置
-        /// </summary>
-        private void restrictCameraPosition()
-    {
-        float cameraSize = cam_.orthographicSize - minSize;
-
-        float maxY = cameraSize * topPar_ + minSizeBound[0];
-        float minY = cameraSize * bottomPar_ + minSizeBound[1];
-        float minX = cameraSize * leftPar_ + minSizeBound[2];
-        float maxX = cameraSize * rightPar_ + minSizeBound[3];
-
-        if (camTrans_.position.y > maxY)
-        {
-            camTrans_.position = new Vector3(camTrans_.position.x, maxY, camTrans_.position.z);
-        }
-        if (camTrans_.position.y < minY)
-        {
-            camTrans_.position = new Vector3(camTrans_.position.x, minY, camTrans_.position.z);
-        }
-        if (camTrans_.position.x < minX)
-        {
-            camTrans_.position = new Vector3(minX, camTrans_.position.y, camTrans_.position.z);
-        }
-        if (camTrans_.position.x > maxX)
-        {
-            camTrans_.position = new Vector3(maxX, camTrans_.position.y, camTrans_.position.z);
-        }
-    }
     }
 }
