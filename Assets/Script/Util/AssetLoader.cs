@@ -16,5 +16,10 @@ namespace Util
        {
             return Resources.LoadAll<T>(path);
        }
+
+        public static string getPrefabPath(string ViewName)
+        {
+            return "";
+        }
     }
 }

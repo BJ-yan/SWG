@@ -12,7 +12,6 @@ namespace Base.Game
         public void Init()
         {
             Debug.Log($"{TAG}, GameManager init");
-            uiManager_.Init();
         }
     }
 }
